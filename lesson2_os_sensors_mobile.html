@@ -1,0 +1,1413 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>7 класс | Роль ОС, смартфон и сенсоры (Доска + Смартфон)</title>
+  <style>
+    :root {
+      --bg-main: #090d16;
+      --bg-panel: #131c2e;
+      --bg-card: #1c2842;
+      --bg-card-hover: #253556;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-cyan: #06b6d4;
+      --accent-blue: #3b82f6;
+      --accent-green: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-red: #ef4444;
+      --accent-purple: #8b5cf6;
+      --border-color: #2e3f63;
+      --radius: 16px;
+      --shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.55);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* ВЕРХНЯЯ ПАНЕЛЬ */
+    header {
+      background: var(--bg-panel);
+      border-bottom: 2px solid var(--border-color);
+      padding: 10px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-badge {
+      background: linear-gradient(135deg, var(--accent-purple), var(--accent-cyan));
+      color: #fff;
+      font-weight: 800;
+      font-size: 0.9rem;
+      padding: 6px 12px;
+      border-radius: 8px;
+      white-space: nowrap;
+    }
+
+    .brand-title {
+      font-size: 1.08rem;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .progress-pill {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--accent-green);
+    }
+
+    .progress-bar-wrap {
+      width: 80px;
+      height: 8px;
+      background: #090d16;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent-purple), var(--accent-green));
+      transition: width 0.3s ease;
+    }
+
+    .top-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .timer-box {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg-card);
+      padding: 4px 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border-color);
+    }
+
+    .timer-display {
+      font-family: monospace;
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: var(--accent-cyan);
+    }
+
+    .btn {
+      background: var(--bg-card);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      padding: 10px 14px;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      min-height: 44px;
+    }
+
+    .btn:active {
+      transform: scale(0.97);
+    }
+
+    .btn-sm {
+      padding: 6px 10px;
+      font-size: 0.85rem;
+      min-height: 34px;
+      border-radius: 8px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-blue));
+      border-color: transparent;
+      color: #fff;
+    }
+
+    .btn-success {
+      background: var(--accent-green);
+      border-color: transparent;
+      color: #fff;
+    }
+
+    .btn-danger {
+      background: var(--accent-red);
+      border-color: transparent;
+      color: #fff;
+    }
+
+    .btn.active-tool {
+      background: var(--accent-amber);
+      color: #000;
+      border-color: #fff;
+    }
+
+    #draw-toolbar {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      background: #090d16;
+      padding: 4px 10px;
+      border-radius: 10px;
+      border: 1px solid var(--accent-amber);
+    }
+
+    .color-dot {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid transparent;
+    }
+
+    .color-dot.active {
+      border-color: #fff;
+      transform: scale(1.15);
+    }
+
+    #draw-canvas {
+      position: fixed;
+      top: 64px;
+      left: 0;
+      width: 100vw;
+      height: calc(100vh - 134px);
+      z-index: 90;
+      pointer-events: none;
+    }
+
+    #draw-canvas.drawing-active {
+      pointer-events: auto;
+      cursor: crosshair;
+      touch-action: none;
+    }
+
+    /* ОСНОВНАЯ ОБЛАСТЬ */
+    main {
+      flex: 1;
+      padding: 20px 24px 90px 24px;
+      max-width: 1480px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .slide {
+      display: none;
+      flex-direction: column;
+      gap: 18px;
+      animation: fadeIn 0.25s ease;
+    }
+
+    .slide.active {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .slide-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 10px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .slide-title {
+      font-size: 1.55rem;
+      font-weight: 800;
+      color: var(--accent-cyan);
+    }
+
+    .slide-tag {
+      background: rgba(6, 182, 212, 0.15);
+      color: var(--accent-cyan);
+      border: 1px solid var(--accent-cyan);
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 0.88rem;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .card {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .card-title {
+      font-size: 1.22rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .highlight-box {
+      background: rgba(59, 130, 246, 0.12);
+      border-left: 4px solid var(--accent-blue);
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 1rem;
+      line-height: 1.45;
+    }
+
+    ul.clean-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 1rem;
+      line-height: 1.45;
+    }
+
+    ul.clean-list li::before {
+      content: "▸ ";
+      color: var(--accent-cyan);
+      font-weight: bold;
+    }
+
+    /* МОДУЛЬ 1: СЛОИ */
+    .layer-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .layer-item {
+      background: var(--bg-card);
+      border: 2px solid var(--border-color);
+      border-radius: 14px;
+      padding: 14px 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .layer-item.active {
+      border-color: var(--accent-cyan);
+      background: rgba(6, 182, 212, 0.15);
+    }
+
+    .layer-num {
+      background: var(--accent-blue);
+      color: #fff;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      white-space: nowrap;
+    }
+
+    /* МОДУЛЬ 2: ЦЕПОЧКА ПО - ОС - ДРАЙВЕР - ЖЕЛЕЗО */
+    .chain-container {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    .chain-node {
+      background: var(--bg-card);
+      border: 2px solid var(--border-color);
+      border-radius: 14px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      transition: all 0.25s;
+    }
+
+    .chain-node.node-active {
+      border-color: var(--accent-green);
+      background: rgba(16, 185, 129, 0.18);
+      box-shadow: 0 0 18px rgba(16, 185, 129, 0.3);
+    }
+
+    .chain-node.node-error {
+      border-color: var(--accent-red);
+      background: rgba(239, 68, 68, 0.22);
+    }
+
+    .status-banner {
+      background: #090d16;
+      border: 2px solid var(--border-color);
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--accent-amber);
+      text-align: center;
+    }
+
+    /* МОДУЛЬ 3: SoC СМАРТФОНА */
+    .phone-blueprint {
+      background: linear-gradient(145deg, #0f172a, #1e293b);
+      border: 4px solid #475569;
+      border-radius: 28px;
+      padding: 16px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      max-width: 440px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .chip-btn {
+      background: var(--bg-card);
+      border: 2px solid var(--border-color);
+      border-radius: 14px;
+      padding: 12px 10px;
+      color: var(--text-main);
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    .chip-btn.active {
+      border-color: var(--accent-cyan);
+      background: rgba(6, 182, 212, 0.22);
+    }
+
+    .chip-btn.soc-core {
+      grid-column: span 2;
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.28), rgba(6, 182, 212, 0.28));
+      border-color: var(--accent-purple);
+      padding: 16px;
+    }
+
+    /* МОДУЛЬ 4: ВИРТУАЛЬНЫЙ И РЕАЛЬНЫЙ СКАНЕР СЕНСОРОВ */
+    .sensor-sim-grid {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 14px;
+      align-items: center;
+    }
+
+    .virtual-phone {
+      width: 230px;
+      height: 310px;
+      margin: 0 auto;
+      background: #0f172a;
+      border: 5px solid #475569;
+      border-radius: 28px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.35s ease;
+    }
+
+    .virtual-phone.rotated {
+      transform: rotate(90deg) scale(0.88);
+    }
+
+    .virtual-phone.screen-off {
+      background: #020408 !important;
+      border-color: #1e293b;
+    }
+
+    .virtual-phone.bright-max {
+      background: #e0f2fe;
+      color: #0f172a;
+    }
+
+    .live-touch-pad {
+      background: #090d16;
+      border: 2px dashed var(--accent-cyan);
+      border-radius: 14px;
+      padding: 14px;
+      text-align: center;
+      touch-action: none;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .proto-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .proto-card {
+      background: var(--bg-card);
+      border: 2px solid var(--border-color);
+      border-radius: 12px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .proto-card.solved {
+      border-color: var(--accent-green);
+      background: rgba(16, 185, 129, 0.12);
+    }
+
+    /* МОДУЛЬ 5: ВИКТОРИНА */
+    .quiz-option {
+      width: 100%;
+      text-align: left;
+      padding: 14px 16px;
+      font-size: 1.05rem;
+      font-weight: 600;
+      background: var(--bg-card);
+      color: var(--text-main);
+      border: 2px solid var(--border-color);
+      border-radius: 12px;
+      cursor: pointer;
+      margin-bottom: 10px;
+    }
+
+    .quiz-option.correct {
+      background: rgba(16, 185, 129, 0.25);
+      border-color: var(--accent-green);
+    }
+
+    .quiz-option.wrong {
+      background: rgba(239, 68, 68, 0.25);
+      border-color: var(--accent-red);
+    }
+
+    /* НИЖНЯЯ НАВИГАЦИЯ */
+    footer {
+      background: var(--bg-panel);
+      border-top: 2px solid var(--border-color);
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      z-index: 100;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .nav-tabs::-webkit-scrollbar {
+      display: none;
+    }
+
+    .tab-btn {
+      background: var(--bg-card);
+      color: var(--text-muted);
+      border: 1px solid var(--border-color);
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      min-height: 40px;
+    }
+
+    .tab-btn.active {
+      background: var(--accent-cyan);
+      color: #090d16;
+      border-color: transparent;
+    }
+
+    .hw-box {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.18), rgba(6, 182, 212, 0.18));
+      border: 2px solid var(--accent-green);
+      border-radius: var(--radius);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    /* АДАПТАЦИЯ ПОД СМАРТФОНЫ */
+    @media (max-width: 1024px) {
+      .grid-2, .chain-container {
+        grid-template-columns: 1fr;
+      }
+      .sensor-sim-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      header {
+        padding: 8px 12px;
+      }
+      .brand-title {
+        font-size: 0.95rem;
+      }
+      .desktop-only {
+        display: none !important;
+      }
+      main {
+        padding: 14px 12px 86px 12px;
+      }
+      .slide-title {
+        font-size: 1.25rem;
+      }
+      .proto-grid {
+        grid-template-columns: 1fr;
+      }
+      .tab-label-text {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <div class="brand-badge">7 КЛАСС</div>
+      <div class="brand-title">ОС, Смартфон и Сенсоры</div>
+    </div>
+
+    <div class="progress-pill">
+      <span>⭐ <span id="prog-pct">0%</span></span>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" id="prog-fill"></div>
+      </div>
+    </div>
+
+    <div class="top-controls">
+      <div id="draw-toolbar">
+        <div class="color-dot active" style="background:#f59e0b" onclick="setPenColor('#f59e0b', this)"></div>
+        <div class="color-dot" style="background:#06b6d4" onclick="setPenColor('#06b6d4', this)"></div>
+        <div class="color-dot" style="background:#10b981" onclick="setPenColor('#10b981', this)"></div>
+        <button class="btn btn-sm btn-danger" onclick="clearCanvas()">Стереть</button>
+      </div>
+
+      <button class="btn btn-sm desktop-only" id="btn-draw" onclick="toggleDraw()">✏️ Маркер</button>
+
+      <div class="timer-box desktop-only">
+        <span class="timer-display" id="timer-display">45:00</span>
+        <button class="btn btn-sm btn-primary" id="timer-btn" onclick="toggleTimer()">▶</button>
+        <button class="btn btn-sm" onclick="resetTimer()">↺</button>
+      </div>
+
+      <button class="btn btn-sm desktop-only" onclick="toggleFullScreen()">⛶ Экран</button>
+    </div>
+  </header>
+
+  <canvas id="draw-canvas"></canvas>
+
+  <main>
+    <!-- СЛАЙД 1 -->
+    <section class="slide active" id="slide-0">
+      <div class="slide-header">
+        <div class="slide-title">1. Роль Операционной системы (ОС)</div>
+        <div class="slide-tag">Шаг 1 из 6</div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">🔗 Нажми на каждый уровень цепочки (1 ➔ 4)</div>
+          <div class="layer-stack">
+            <div class="layer-item active" onclick="showLayer(0, this)">
+              <div>
+                <div style="font-size:1.05rem; font-weight:800;">👤 1. Пользователь</div>
+                <div style="font-size:0.88rem; color:var(--text-muted);">Касается экрана, нажимает кнопки</div>
+              </div>
+              <span class="layer-num">Уровень 1</span>
+            </div>
+
+            <div class="layer-item" onclick="showLayer(1, this)">
+              <div>
+                <div style="font-size:1.05rem; font-weight:800;">📱 2. Прикладное ПО (Приложения)</div>
+                <div style="font-size:0.88rem; color:var(--text-muted);">Игры, браузер, камера, мессенджер</div>
+              </div>
+              <span class="layer-num">Уровень 2</span>
+            </div>
+
+            <div class="layer-item" onclick="showLayer(2, this)">
+              <div>
+                <div style="font-size:1.05rem; font-weight:800; color:var(--accent-cyan);">⚙️ 3. Операционная система + Драйверы</div>
+                <div style="font-size:0.88rem; color:var(--text-muted);">Android, iOS, Windows, Linux</div>
+              </div>
+              <span class="layer-num">Уровень 3</span>
+            </div>
+
+            <div class="layer-item" onclick="showLayer(3, this)">
+              <div>
+                <div style="font-size:1.05rem; font-weight:800; color:var(--accent-amber);">🔌 4. Аппаратное обеспечение («Железо»)</div>
+                <div style="font-size:0.88rem; color:var(--text-muted);">Процессор, ОЗУ, экран, камера, сенсоры</div>
+              </div>
+              <span class="layer-num">Уровень 4</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title" id="layer-detail-title">👤 Уровень 1: Пользователь и Интерфейс</div>
+          <div class="highlight-box" id="layer-detail-desc">
+            Человек управляет устройством через <strong>графический интерфейс (GUI)</strong> — иконки, окна и жесты, которые рисует Операционная система.
+          </div>
+
+          <ul class="clean-list">
+            <li><strong>ОС для ПК (Windows, Linux, macOS):</strong> созданы под мышь и клавиатуру, питание от сети и высокую мощность.</li>
+            <li><strong>Мобильные ОС (Android, iOS):</strong> созданы под <strong>сенсорный экран</strong>, экономию батареи, работу с датчиками и беспроводной связью.</li>
+            <li><strong>Драйвер</strong> — программа-переводчик внутри ОС, которая умеет управлять конкретной деталью (камерой, звуком, экраном).</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- СЛАЙД 2 -->
+    <section class="slide" id="slide-1">
+      <div class="slide-header">
+        <div class="slide-title">2. Симулятор: Путь команды и роль Драйвера</div>
+        <div class="slide-tag">Шаг 2 из 6</div>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; background:var(--bg-panel); padding:12px 16px; border-radius:14px; border:1px solid var(--border-color); flex-wrap:wrap;">
+        <select id="sim-task" class="btn" onchange="resetChain()" style="flex:1; min-width:220px;">
+          <option value="camera">📸 Смартфон: Сделать фото на камеру</option>
+          <option value="audio">🎧 Включить музыку в Bluetooth-наушниках</option>
+          <option value="print">📽️ ПК: Вывести картинку на проектор</option>
+        </select>
+
+        <div style="display:flex; gap:8px; flex-wrap:wrap; width:100%; justify-content:flex-end;">
+          <button class="btn btn-primary" style="flex:1;" onclick="stepChain()">⏭ Шаг сигнала</button>
+          <button class="btn" onclick="resetChain()">↺</button>
+          <button class="btn btn-danger" id="driver-btn" onclick="toggleDriver()">⚠️ Сломать драйвер</button>
+        </div>
+      </div>
+
+      <div class="status-banner" id="chain-status">
+        Нажмите «⏭ Шаг сигнала», чтобы проследить путь команды от нажатия пальцем до микросхемы!
+      </div>
+
+      <div class="chain-container">
+        <div class="chain-node" id="cnode-1">
+          <div style="font-weight:800; color:var(--accent-cyan);">1. Приложение (ПО)</div>
+          <div id="cnode-1-text" style="font-size:0.92rem; color:var(--text-muted);">Пользователь нажимает кнопку «Сфотографировать».</div>
+        </div>
+
+        <div class="chain-node" id="cnode-2">
+          <div style="font-weight:800; color:var(--accent-blue);">2. Ядро ОС</div>
+          <div id="cnode-2-text" style="font-size:0.92rem; color:var(--text-muted);">Проверяет разрешение на камеру и выделяет ОЗУ.</div>
+        </div>
+
+        <div class="chain-node" id="cnode-3">
+          <div style="font-weight:800; color:var(--accent-amber);">3. Драйвер</div>
+          <div id="cnode-3-text" style="font-size:0.92rem; color:var(--text-muted);">Переводит запрос ОС в сигналы для линзы и матрицы.</div>
+        </div>
+
+        <div class="chain-node" id="cnode-4">
+          <div style="font-weight:800; color:var(--accent-green);">4. «Железо»</div>
+          <div id="cnode-4-text" style="font-size:0.92rem; color:var(--text-muted);">Матрица фиксирует свет и сохраняет кадр!</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- СЛАЙД 3 -->
+    <section class="slide" id="slide-2">
+      <div class="slide-header">
+        <div class="slide-title">3. Архитектура смартфона (Рентген)</div>
+        <div class="slide-tag">Шаг 3 из 6</div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div style="text-align:center; font-weight:700; color:var(--text-muted);">
+            👆 Нажимай на детали внутри корпуса смартфона:
+          </div>
+          <div class="phone-blueprint">
+            <button class="chip-btn" onclick="selectHw('cam', this)">
+              <span style="font-size:1.5rem;">📷</span>
+              <span>Камеры и ИК-датчики</span>
+            </button>
+            <button class="chip-btn" onclick="selectHw('screen', this)">
+              <span style="font-size:1.5rem;">📱</span>
+              <span>Тачскрин (Мультитач)</span>
+            </button>
+
+            <button class="chip-btn soc-core active" onclick="selectHw('soc', this)">
+              <span style="font-size:1.7rem;">🧠</span>
+              <span>Чип SoC (Система-на-кристалле)</span>
+              <small style="color:var(--accent-cyan);">CPU + GPU + NPU + Модемы 5G/Wi-Fi</small>
+            </button>
+
+            <button class="chip-btn" onclick="selectHw('mem', this)">
+              <span style="font-size:1.5rem;">💾</span>
+              <span>Память ОЗУ + Flash</span>
+            </button>
+            <button class="chip-btn" onclick="selectHw('bat', this)">
+              <span style="font-size:1.5rem;">🔋</span>
+              <span>Аккумулятор</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title" id="hw-info-title" style="color:var(--accent-cyan);">
+            🧠 SoC (System-on-a-Chip) — «Сердце» смартфона
+          </div>
+          <div class="highlight-box" id="hw-info-desc">
+            В смартфоне процессор, видеокарта и сетевые модемы объединены в <strong>один микрочип размером с ноготь — SoC (Система-на-кристалле)</strong>.
+          </div>
+          <ul class="clean-list" id="hw-info-list">
+            <li><strong>CPU + GPU:</strong> вычисляют код приложений и рисуют 3D-графику.</li>
+            <li><strong>Нейроблок (NPU):</strong> отвечает за ИИ, улучшение фото и распознавание лица.</li>
+            <li><strong>Модем связи:</strong> обеспечивает работу 4G/5G, Wi-Fi, Bluetooth и GPS.</li>
+            <li><strong>Пассивное охлаждение:</strong> смартфон отводит тепло через корпус без вентиляторов.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- СЛАЙД 4 -->
+    <section class="slide" id="slide-3">
+      <div class="slide-header">
+        <div class="slide-title">4. Лаборатория сенсоров и связи</div>
+        <div class="slide-tag">Шаг 4 из 6</div>
+      </div>
+
+      <div class="grid-2">
+        <!-- Левая карточка: Симулятор + Живой тест -->
+        <div class="card">
+          <div class="card-title">📡 1. Как работают сенсоры (Проверь все 5)</div>
+          <div class="sensor-sim-grid">
+            <div class="virtual-phone" id="v-phone">
+              <div style="display:flex; justify-content:space-between; font-size:0.75rem; opacity:0.8;">
+                <span>5G • Wi-Fi</span>
+                <span>🔋 95%</span>
+              </div>
+              <div style="text-align:center; padding:6px;">
+                <div style="font-size:2.2rem;" id="v-phone-icon">📱</div>
+                <div style="font-weight:800; font-size:1rem; margin-top:4px;" id="v-phone-title">Готов к тесту</div>
+                <p style="font-size:0.82rem; margin-top:4px; opacity:0.85;" id="v-phone-sub">
+                  Нажимай кнопки ситуаций, чтобы увидеть реакцию датчика!
+                </p>
+              </div>
+              <div style="text-align:center; font-size:0.75rem; opacity:0.8;">Датчик: <strong id="v-sensor-name">—</strong></div>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <button class="btn btn-sm" style="justify-content:flex-start; text-align:left;" onclick="triggerSensor('rotate')">
+                🔄 <div><strong>Повернуть корпус</strong> (Акселерометр + Гироскоп)</div>
+              </button>
+              <button class="btn btn-sm" style="justify-content:flex-start; text-align:left;" onclick="triggerSensor('ear')">
+                📞 <div><strong>Поднести к уху</strong> (Датчик приближения)</div>
+              </button>
+              <button class="btn btn-sm" style="justify-content:flex-start; text-align:left;" onclick="triggerSensor('sun')">
+                ☀️ <div><strong>Выйти на солнце</strong> (Датчик освещённости)</div>
+              </button>
+              <button class="btn btn-sm" style="justify-content:flex-start; text-align:left;" onclick="triggerSensor('nav')">
+                🧭 <div><strong>Открыть карту</strong> (GPS + Магнитометр)</div>
+              </button>
+              <button class="btn btn-sm" style="justify-content:flex-start; text-align:left;" onclick="triggerSensor('bio')">
+                🔐 <div><strong>Приложить палец</strong> (Биометрический сканер)</div>
+              </button>
+            </div>
+          </div>
+
+          <!-- ЖИВОЙ СКАНЕР СЕНСОРОВ ТЕЛЕФОНА -->
+          <div class="live-touch-pad" id="live-sensor-pad">
+            <div style="font-weight:800; color:var(--accent-cyan); font-size:0.95rem;">
+              ⚡ ЖИВОЙ ТЕСТ ТВОЕГО УСТРОЙСТВА (Коснись этой зоны пальцами или поверни телефон)
+            </div>
+            <div id="live-sensor-readout" style="font-family:monospace; font-size:0.9rem; margin-top:6px; color:var(--accent-green);">
+              Касаний: 0 | Координаты X: —, Y: — | Наклон: ожидание
+            </div>
+          </div>
+        </div>
+
+        <!-- Правая карточка: Передача данных -->
+        <div class="card">
+          <div class="card-title">📶 2. Передача данных (Подбери технологию связи)</div>
+          <div class="proto-grid">
+            <div class="proto-card" id="pcard-1">
+              <div style="font-weight:700; font-size:0.95rem;">1. Оплата телефоном на кассе (до 4 см)</div>
+              <select class="btn btn-sm" onchange="checkProto(1, this.value)">
+                <option value="">— Выбрать —</option>
+                <option value="NFC">NFC (Ближняя связь)</option>
+                <option value="WiFi">Wi-Fi</option>
+                <option value="5G">4G / 5G</option>
+              </select>
+              <span id="pstatus-1" style="font-size:0.82rem; color:var(--text-muted);">Выбери ответ...</span>
+            </div>
+
+            <div class="proto-card" id="pcard-2">
+              <div style="font-weight:700; font-size:0.95rem;">2. Беспроводные наушники и часы (до 10 м)</div>
+              <select class="btn btn-sm" onchange="checkProto(2, this.value)">
+                <option value="">— Выбрать —</option>
+                <option value="NFC">NFC</option>
+                <option value="BT">Bluetooth</option>
+                <option value="GPS">GPS</option>
+              </select>
+              <span id="pstatus-2" style="font-size:0.82rem; color:var(--text-muted);">Выбери ответ...</span>
+            </div>
+
+            <div class="proto-card" id="pcard-3">
+              <div style="font-weight:700; font-size:0.95rem;">3. Домашний интернет через роутер (до 50 м)</div>
+              <select class="btn btn-sm" onchange="checkProto(3, this.value)">
+                <option value="">— Выбрать —</option>
+                <option value="BT">Bluetooth</option>
+                <option value="WiFi">Wi-Fi</option>
+                <option value="NFC">NFC</option>
+              </select>
+              <span id="pstatus-3" style="font-size:0.82rem; color:var(--text-muted);">Выбери ответ...</span>
+            </div>
+
+            <div class="proto-card" id="pcard-4">
+              <div style="font-weight:700; font-size:0.95rem;">4. Интернет и звонки в дороге по городу (км)</div>
+              <select class="btn btn-sm" onchange="checkProto(4, this.value)">
+                <option value="">— Выбрать —</option>
+                <option value="5G">Мобильная сеть 4G/5G</option>
+                <option value="NFC">NFC</option>
+                <option value="BT">Bluetooth</option>
+              </select>
+              <span id="pstatus-4" style="font-size:0.82rem; color:var(--text-muted);">Выбери ответ...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- СЛАЙД 5 -->
+    <section class="slide" id="slide-4">
+      <div class="slide-header">
+        <div class="slide-title">5. Блиц-проверка знаний</div>
+        <div class="slide-tag" id="quiz-score-badge">Счёт: 0 / 6</div>
+      </div>
+
+      <div class="card" style="max-width: 900px; margin: 0 auto; width: 100%;">
+        <div style="display:flex; justify-content:space-between; color:var(--text-muted); font-weight:700;">
+          <span id="quiz-progress">Вопрос 1 из 6</span>
+          <button class="btn btn-sm" onclick="restartQuiz()">↺ Заново</button>
+        </div>
+        <h3 id="quiz-question" style="font-size:1.25rem; line-height:1.4;"></h3>
+        <div id="quiz-options"></div>
+        <div id="quiz-feedback" class="highlight-box" style="display:none;"></div>
+        <button class="btn btn-primary" id="quiz-next-btn" onclick="nextQuizQuestion()" style="display:none; width:100%;">
+          Следующий вопрос ➔
+        </button>
+      </div>
+    </section>
+
+    <!-- СЛАЙД 6 -->
+    <section class="slide" id="slide-5">
+      <div class="slide-header">
+        <div class="slide-title">6. Конспект и Домашнее задание</div>
+        <div class="slide-tag">Шаг 6 из 6</div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">📝 Главные тезисы в тетрадь</div>
+          <ul class="clean-list">
+            <li><strong>Операционная система (ОС)</strong> — управляет аппаратным обеспечением («железом»), распределяет память и даёт интерфейс пользователю.</li>
+            <li><strong>Драйвер</strong> — программа-переводчик, позволяющая ОС управлять конкретным устройством (камерой, экраном, звуком).</li>
+            <li><strong>SoC (Система-на-кристалле)</strong> — микрочип смартфона, объединяющий ЦП, видеоядро (GPU), память и модемы связи.</li>
+            <li><strong>Главные сенсоры телефона:</strong>
+              <br>• <strong>Акселерометр и гироскоп</strong> — поворот и наклон в пространстве;
+              <br>• <strong>Датчик приближения</strong> — гасит экран у уха при звонке;
+              <br>• <strong>Датчик освещённости</strong> — настраивает автояркость;
+              <br>• <strong>GPS и магнитометр</strong> — навигация и компас.
+            </li>
+          </ul>
+        </div>
+
+        <div class="hw-box">
+          <div style="font-size:0.9rem; font-weight:800; color:var(--accent-amber); text-transform:uppercase;">
+            📌 Домашнее задание (Эксперимент со смартфоном)
+          </div>
+          <div style="font-size:1.3rem; font-weight:800; color:#fff;">
+            «Найти и изучить, как работают сенсоры в вашем телефоне»
+          </div>
+          <ul class="clean-list" style="font-size:0.96rem;">
+            <li><strong>1. Датчик освещённости:</strong> включите «Автояркость», поднесите телефон к свету и закройте верхнюю рамку рукой. Как меняется яркость?</li>
+            <li><strong>2. Акселерометр и гироскоп:</strong> проверьте, как работает «Автоповорот экрана» при наклоне корпуса на 90°.</li>
+            <li><strong>3. Датчик приближения:</strong> прикройте верхнюю часть экрана во время голосового вызова. Почему экран гаснет?</li>
+            <li><strong>4. Свои датчики:</strong> запишите в тетрадь, какие ещё сенсоры есть в вашем телефоне (отпечаток пальца, FaceID, компас, NFC).</li>
+          </ul>
+          <button class="btn btn-primary" onclick="copyHomework()" id="copy-hw-btn" style="margin-top:auto;">
+            📋 Скопировать план ДЗ в заметки телефона
+          </button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- НИЖНЯЯ НАВИГАЦИЯ -->
+  <footer>
+    <button class="btn btn-sm" id="btn-prev" onclick="changeSlide(-1)">⬅</button>
+
+    <div class="nav-tabs">
+      <button class="tab-btn active" onclick="goToSlide(0)">1<span class="tab-label-text">. Роль ОС</span></button>
+      <button class="tab-btn" onclick="goToSlide(1)">2<span class="tab-label-text">. Драйверы</span></button>
+      <button class="tab-btn" onclick="goToSlide(2)">3<span class="tab-label-text">. Архитектура</span></button>
+      <button class="tab-btn" onclick="goToSlide(3)">4<span class="tab-label-text">. Сенсоры</span></button>
+      <button class="tab-btn" onclick="goToSlide(4)">5<span class="tab-label-text">. Тест</span></button>
+      <button class="tab-btn" onclick="goToSlide(5)">6<span class="tab-label-text">. Итог и ДЗ</span></button>
+    </div>
+
+    <button class="btn btn-sm btn-primary" id="btn-next" onclick="changeSlide(1)">➔</button>
+  </footer>
+
+  <script>
+    /* ПРОГРЕСС УЧЕНИКА */
+    const doneActions = new Set();
+    const totalActions = 12;
+
+    function markProgress(key) {
+      doneActions.add(key);
+      const pct = Math.min(100, Math.round((doneActions.size / totalActions) * 100));
+      document.getElementById('prog-pct').textContent = pct + '%';
+      document.getElementById('prog-fill').style.width = pct + '%';
+    }
+
+    /* НАВИГАЦИЯ */
+    let currentSlide = 0;
+    const totalSlides = 6;
+
+    function goToSlide(index) {
+      if (index < 0 || index >= totalSlides) return;
+      currentSlide = index;
+      document.querySelectorAll('.slide').forEach((s, i) => s.classList.toggle('active', i === currentSlide));
+      document.querySelectorAll('.tab-btn').forEach((b, i) => b.classList.toggle('active', i === currentSlide));
+      document.getElementById('btn-prev').disabled = (currentSlide === 0);
+      document.getElementById('btn-next').disabled = (currentSlide === totalSlides - 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function changeSlide(delta) {
+      goToSlide(currentSlide + delta);
+    }
+
+    /* ТАЙМЕР И ЭКРАН */
+    let timeSeconds = 45 * 60, timerInterval = null;
+    function updateTimerDisplay() {
+      const m = String(Math.floor(timeSeconds / 60)).padStart(2, '0');
+      const s = String(timeSeconds % 60).padStart(2, '0');
+      document.getElementById('timer-display').textContent = `${m}:${s}`;
+    }
+    function toggleTimer() {
+      const btn = document.getElementById('timer-btn');
+      if (timerInterval) { clearInterval(timerInterval); timerInterval = null; btn.textContent = '▶'; }
+      else {
+        btn.textContent = '⏸';
+        timerInterval = setInterval(() => { if (timeSeconds > 0) { timeSeconds--; updateTimerDisplay(); } }, 1000);
+      }
+    }
+    function resetTimer() { clearInterval(timerInterval); timerInterval = null; timeSeconds = 45 * 60; document.getElementById('timer-btn').textContent = '▶'; updateTimerDisplay(); }
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
+      else document.exitFullscreen().catch(() => {});
+    }
+
+    /* МАРКЕР ДОСКИ */
+    const canvas = document.getElementById('draw-canvas');
+    const ctx = canvas.getContext('2d');
+    let isDrawingMode = false, isPainting = false, penColor = '#f59e0b';
+    function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight - 130; }
+    window.addEventListener('resize', resizeCanvas); resizeCanvas();
+
+    function toggleDraw() {
+      isDrawingMode = !isDrawingMode;
+      canvas.classList.toggle('drawing-active', isDrawingMode);
+      document.getElementById('btn-draw').classList.toggle('active-tool', isDrawingMode);
+      document.getElementById('draw-toolbar').style.display = isDrawingMode ? 'flex' : 'none';
+    }
+    function setPenColor(color, el) {
+      penColor = color;
+      document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('active'));
+      el.classList.add('active');
+    }
+    function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+    function getPos(e) {
+      const rect = canvas.getBoundingClientRect();
+      const cx = (e.touches && e.touches[0]) ? e.touches[0].clientX : e.clientX;
+      const cy = (e.touches && e.touches[0]) ? e.touches[0].clientY : e.clientY;
+      return { x: cx - rect.left, y: cy - rect.top };
+    }
+    canvas.addEventListener('mousedown', e => { if (!isDrawingMode) return; isPainting = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); });
+    canvas.addEventListener('mousemove', e => { if (!isDrawingMode || !isPainting) return; const p = getPos(e); ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.strokeStyle = penColor; ctx.lineTo(p.x, p.y); ctx.stroke(); });
+    window.addEventListener('mouseup', () => isPainting = false);
+    canvas.addEventListener('touchstart', e => { if (!isDrawingMode) return; isPainting = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); }, { passive: false });
+    canvas.addEventListener('touchmove', e => { if (!isDrawingMode || !isPainting) return; e.preventDefault(); const p = getPos(e); ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.strokeStyle = penColor; ctx.lineTo(p.x, p.y); ctx.stroke(); }, { passive: false });
+    window.addEventListener('touchend', () => isPainting = false);
+
+    /* МОДУЛЬ 1: УРОВНИ */
+    const layersData = [
+      { title: '👤 Уровень 1: Пользователь и Интерфейс (GUI)', desc: 'Человек взаимодействует с иконками, окнами и жестами, которые рисует Операционная система.' },
+      { title: '📱 Уровень 2: Прикладное ПО (Приложения)', desc: 'Приложения решают задачи человека, но <strong>не могут управлять «железом» напрямую</strong> — они обращаются к ОС!' },
+      { title: '⚙️ Уровень 3: Операционная система и Драйверы', desc: '<strong>Главный диспетчер!</strong> Ядро ОС выделяет память и через <strong>драйверы</strong> отдаёт команды микросхемам.' },
+      { title: '🔌 Уровень 4: Аппаратное обеспечение («Железо»)', desc: 'Физические детали: процессор, память, экран, камера, батарея и сенсоры.' }
+    ];
+
+    function showLayer(idx, el) {
+      document.querySelectorAll('.layer-item').forEach(item => item.classList.remove('active'));
+      el.classList.add('active');
+      markProgress('layer_' + idx);
+      document.getElementById('layer-detail-title').textContent = layersData[idx].title;
+      document.getElementById('layer-detail-desc').innerHTML = layersData[idx].desc;
+    }
+
+    /* МОДУЛЬ 2: СИМУЛЯТОР ЦЕПОЧКИ */
+    let chainStep = 0, driverBroken = false;
+    const tasksData = {
+      camera: {
+        s1: 'Пользователь нажал кнопку «Сфотографировать».',
+        s2: 'Ядро ОС проверило разрешение и выделило ОЗУ.',
+        s3: 'Драйвер камеры перевёл команду в сигналы для линзы и матрицы.',
+        s4: 'Сенсор камеры считал свет и сохранил снимок!'
+      },
+      audio: {
+        s1: 'Пользователь нажал «Play» в плеере.',
+        s2: 'ОС прочитала аудиофайл из памяти.',
+        s3: 'Драйвер Bluetooth закодировал звук в радиосигнал.',
+        s4: 'Наушники воспроизвели музыку!'
+      },
+      print: {
+        s1: 'Учитель нажал «Вывести на проектор».',
+        s2: 'ОС подготовила видеокадр для отправки.',
+        s3: 'Драйвер видеокарты передал сигнал по кабелю HDMI.',
+        s4: 'Проектор вывел урок на экран!'
+      }
+    };
+
+    function clearChainHighlights() {
+      [1, 2, 3, 4].forEach(n => document.getElementById('cnode-' + n).classList.remove('node-active', 'node-error'));
+    }
+
+    function resetChain() {
+      chainStep = 0;
+      clearChainHighlights();
+      const t = tasksData[document.getElementById('sim-task').value];
+      document.getElementById('cnode-1-text').textContent = t.s1;
+      document.getElementById('cnode-2-text').textContent = t.s2;
+      document.getElementById('cnode-3-text').textContent = driverBroken ? '❌ ДРАЙВЕР ОТКЛЮЧЁН!' : t.s3;
+      document.getElementById('cnode-4-text').textContent = t.s4;
+      document.getElementById('chain-status').textContent = 'Нажмите «⏭ Шаг сигнала», чтобы проверить работу ОС!';
+    }
+
+    function stepChain() {
+      const t = tasksData[document.getElementById('sim-task').value];
+      chainStep = (chainStep % 4) + 1;
+      clearChainHighlights();
+      markProgress('chain_step');
+
+      if (chainStep === 1) {
+        document.getElementById('cnode-1').classList.add('node-active');
+        document.getElementById('chain-status').textContent = 'ШАГ 1: ' + t.s1;
+      } else if (chainStep === 2) {
+        document.getElementById('cnode-2').classList.add('node-active');
+        document.getElementById('chain-status').textContent = 'ШАГ 2: ' + t.s2;
+      } else if (chainStep === 3) {
+        if (driverBroken) {
+          document.getElementById('cnode-3').classList.add('node-error');
+          document.getElementById('chain-status').textContent = '⛔ ОШИБКА: Драйвер сломан! ОС не понимает, как управлять устройством.';
+          chainStep = 0;
+        } else {
+          document.getElementById('cnode-3').classList.add('node-active');
+          document.getElementById('chain-status').textContent = 'ШАГ 3: ' + t.s3;
+        }
+      } else if (chainStep === 4) {
+        document.getElementById('cnode-4').classList.add('node-active');
+        document.getElementById('chain-status').textContent = 'ШАГ 4 (УСПЕХ): ' + t.s4;
+      }
+    }
+
+    function toggleDriver() {
+      driverBroken = !driverBroken;
+      const btn = document.getElementById('driver-btn');
+      btn.textContent = driverBroken ? '🔧 Починить драйвер' : '⚠️ Сломать драйвер';
+      btn.className = driverBroken ? 'btn btn-success' : 'btn btn-danger';
+      resetChain();
+    }
+
+    /* МОДУЛЬ 3: SoC СМАРТФОНА */
+    const hwDetails = {
+      soc: {
+        title: '🧠 SoC (System-on-a-Chip) — «Система-на-кристалле»',
+        desc: 'Центральный процессор (CPU), графика (GPU), нейроблок (NPU) и модемы связи объединены в <strong>один микрочип SoC</strong>.',
+        list: ['<strong>CPU + GPU:</strong> вычисляют код приложений и рисуют 3D-игры.', '<strong>Модем связи:</strong> 4G/5G, Wi-Fi, Bluetooth и GPS.', '<strong>Пассивное охлаждение:</strong> отводит тепло без вентиляторов.']
+      },
+      screen: {
+        title: '📱 Сенсорный экран (Ёмкостный мультитач)',
+        desc: 'Одновременно устройство вывода картинки и главное устройство ввода касаний.',
+        list: ['Под стеклом находится прозрачная сетка электродов.', 'Реагирует на слабый ток пальца и определяет координаты до 10 касаний сразу.']
+      },
+      cam: {
+        title: '📷 Камеры и оптические датчики',
+        desc: 'Превращают свет в цифровое изображение и следят за освещением вокруг.',
+        list: ['<strong>Матрица камеры:</strong> переводит свет в пиксели.', '<strong>Датчики приближения и света:</strong> находятся в верхней рамке экрана.']
+      },
+      mem: {
+        title: '💾 Память (ОЗУ LPDDR + Flash UFS)',
+        desc: 'Экономичные микросхемы памяти для хранения открытых программ и личных файлов.',
+        list: ['<strong>ОЗУ:</strong> держит запущенные приложения.', '<strong>Flash-память:</strong> хранит систему Android/iOS, фото и игры без питания.']
+      },
+      bat: {
+        title: '🔋 Аккумулятор и контроллер питания',
+        desc: 'Обеспечивает автономную работу и защищает телефон от перегрева при зарядке.',
+        list: ['ОС переводит процессор в режим сна, когда экран выключен.']
+      }
+    };
+
+    function selectHw(key, btn) {
+      document.querySelectorAll('.chip-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      markProgress('hw_' + key);
+      const d = hwDetails[key];
+      document.getElementById('hw-info-title').textContent = d.title;
+      document.getElementById('hw-info-desc').innerHTML = d.desc;
+      document.getElementById('hw-info-list').innerHTML = d.list.map(i => `<li>${i}</li>`).join('');
+    }
+
+    /* МОДУЛЬ 4: СЕНСОРЫ + ЖИВОЙ СКАНЕР СМАРТФОНА */
+    function triggerSensor(type) {
+      const phone = document.getElementById('v-phone');
+      const icon = document.getElementById('v-phone-icon');
+      const title = document.getElementById('v-phone-title');
+      const sub = document.getElementById('v-phone-sub');
+      const sName = document.getElementById('v-sensor-name');
+      phone.className = 'virtual-phone';
+      markProgress('sens_' + type);
+
+      if (type === 'rotate') {
+        phone.classList.add('rotated');
+        icon.textContent = '🎬'; title.textContent = 'Поворот 90°';
+        sub.textContent = 'Датчики уловили наклон — ОС повернула картинку!';
+        sName.textContent = 'Акселерометр + Гироскоп';
+      } else if (type === 'ear') {
+        phone.classList.add('screen-off');
+        icon.textContent = '🌑'; title.textContent = 'Экран погашен';
+        sub.textContent = 'ИК-луч отразился от уха — тачскрин отключён на время звонка!';
+        sName.textContent = 'Датчик приближения';
+      } else if (type === 'sun') {
+        phone.classList.add('bright-max');
+        icon.textContent = '☀️'; title.textContent = 'Яркость 100%';
+        sub.textContent = 'Датчик света увидел солнце — ОС повысила подсветку экрана.';
+        sName.textContent = 'Датчик освещённости';
+      } else if (type === 'nav') {
+        icon.textContent = '🧭'; title.textContent = 'Координаты найдены';
+        sub.textContent = 'Спутники GPS дали точку на карте, а магнитометр — направление.';
+        sName.textContent = 'GPS + Магнитометр';
+      } else if (type === 'bio') {
+        icon.textContent = '🔓'; title.textContent = 'Разблокировано!';
+        sub.textContent = 'Сканер сверил отпечаток пальца с защищённым ключом.';
+        sName.textContent = 'Биометрический датчик';
+      }
+    }
+
+    // Реальный считыватель сенсоров на телефоне/доске
+    const livePad = document.getElementById('live-sensor-pad');
+    const liveReadout = document.getElementById('live-sensor-readout');
+    let tiltInfo = 'Горизонтально';
+
+    window.addEventListener('deviceorientation', e => {
+      if (e.beta !== null && e.gamma !== null) {
+        tiltInfo = `Наклон: ${Math.round(e.beta)}° / ${Math.round(e.gamma)}°`;
+      }
+    });
+
+    function updateLivePad(touches, x, y) {
+      const orient = (window.innerWidth > window.innerHeight) ? 'Альбомная' : 'Портретная';
+      liveReadout.textContent = `Пальцев: ${touches} | X: ${Math.round(x)}, Y: ${Math.round(y)} | Экран: ${orient} | ${tiltInfo}`;
+      markProgress('live_touch');
+    }
+
+    livePad.addEventListener('touchstart', e => {
+      e.preventDefault();
+      const rect = livePad.getBoundingClientRect();
+      const t = e.touches[0];
+      updateLivePad(e.touches.length, t.clientX - rect.left, t.clientY - rect.top);
+    }, { passive: false });
+
+    livePad.addEventListener('touchmove', e => {
+      e.preventDefault();
+      const rect = livePad.getBoundingClientRect();
+      const t = e.touches[0];
+      updateLivePad(e.touches.length, t.clientX - rect.left, t.clientY - rect.top);
+    }, { passive: false });
+
+    livePad.addEventListener('mousemove', e => {
+      const rect = livePad.getBoundingClientRect();
+      updateLivePad(1, e.clientX - rect.left, e.clientY - rect.top);
+    });
+
+    const correctProtos = { 1: 'NFC', 2: 'BT', 3: 'WiFi', 4: '5G' };
+    function checkProto(num, val) {
+      const card = document.getElementById('pcard-' + num);
+      const status = document.getElementById('pstatus-' + num);
+      if (val === correctProtos[num]) {
+        card.classList.add('solved');
+        status.style.color = '#10b981';
+        status.textContent = '✅ Верно!';
+        markProgress('proto_' + num);
+      } else {
+        card.classList.remove('solved');
+        status.style.color = '#ef4444';
+        status.textContent = '❌ Проверь дальность связи!';
+      }
+    }
+
+    /* МОДУЛЬ 5: ВИКТОРИНА */
+    const quizData = [
+      {
+        q: '1. Какая программа внутри ОС служит «переводчиком» между системой и конкретным устройством (камерой, принтером)?',
+        options: ['Текстовый редактор', 'Драйвер устройства', 'Браузер', 'Калькулятор'],
+        answer: 1, explain: 'Верно! Драйвер переводит команды ОС на язык конкретной аппаратуры.'
+      },
+      {
+        q: '2. Как называется чип смартфона, объединяющий процессор, видеоядро и модемы связи в одном кристалле?',
+        options: ['SoC (Система-на-кристалле)', 'Жёсткий диск HDD', 'Блок питания', 'Кулер'],
+        answer: 0, explain: 'Точно! Архитектура SoC делает смартфоны компактными и экономичными.'
+      },
+      {
+        q: '3. Какой сенсор гасит экран телефона, когда вы подносите его к уху при звонке?',
+        options: ['Барометр', 'Датчик приближения', 'GPS-модуль', 'Микрофон'],
+        answer: 1, explain: 'Правильно! Датчик приближения защищает экран от случайных нажатий щекой.'
+      },
+      {
+        q: '4. Какие сенсоры отвечают за автоповорот экрана и управление наклоном в играх?',
+        options: ['Акселерометр и гироскоп', 'NFC и Bluetooth', 'Сканер отпечатка', 'SIM-карта'],
+        answer: 0, explain: 'Верно! Они отслеживают ускорение и угол наклона смартфона в пространстве.'
+      },
+      {
+        q: '5. Какая беспроводная технология работает на расстоянии до 4 см для бесконтактной оплаты?',
+        options: ['5G', 'GPS', 'NFC', 'Wi-Fi'],
+        answer: 2, explain: 'Отлично! Малый радиус NFC обеспечивает безопасность платежей.'
+      },
+      {
+        q: '6. Может ли игра управлять камерой или памятью напрямую в обход Операционной системы?',
+        options: ['Нет, все программы обращаются к «железу» только через ОС и драйверы', 'Да, всегда', 'Да, если телефон без пароля', 'ОС нужна только на ПК'],
+        answer: 0, explain: 'Верно! ОС контролирует доступ всех приложений к аппаратным ресурсам.'
+      }
+    ];
+
+    let qIndex = 0, qScore = 0, qAnswered = false;
+
+    function renderQuiz() {
+      const item = quizData[qIndex];
+      qAnswered = false;
+      document.getElementById('quiz-progress').textContent = `Вопрос ${qIndex + 1} из ${quizData.length}`;
+      document.getElementById('quiz-score-badge').textContent = `Счёт: ${qScore} / ${quizData.length}`;
+      document.getElementById('quiz-question').textContent = item.q;
+      document.getElementById('quiz-feedback').style.display = 'none';
+      document.getElementById('quiz-next-btn').style.display = 'none';
+
+      const optContainer = document.getElementById('quiz-options');
+      optContainer.innerHTML = '';
+      item.options.forEach((optText, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'quiz-option';
+        btn.textContent = optText;
+        btn.onclick = () => checkAnswer(idx, btn);
+        optContainer.appendChild(btn);
+      });
+    }
+
+    function checkAnswer(selectedIdx, btnElement) {
+      if (qAnswered) return;
+      qAnswered = true;
+      const item = quizData[qIndex];
+      const allButtons = document.querySelectorAll('.quiz-option');
+      if (selectedIdx === item.answer) {
+        qScore++;
+        btnElement.classList.add('correct');
+        markProgress('quiz_' + qIndex);
+      } else {
+        btnElement.classList.add('wrong');
+        allButtons[item.answer].classList.add('correct');
+      }
+      document.getElementById('quiz-score-badge').textContent = `Счёт: ${qScore} / ${quizData.length}`;
+      const fb = document.getElementById('quiz-feedback');
+      fb.innerHTML = (qIndex === quizData.length - 1)
+        ? `<strong>🎉 Тест завершён! Ваш счёт: ${qScore} из ${quizData.length}.</strong><br>${item.explain}`
+        : item.explain;
+      fb.style.display = 'block';
+      if (qIndex < quizData.length - 1) document.getElementById('quiz-next-btn').style.display = 'inline-flex';
+    }
+
+    function nextQuizQuestion() { if (qIndex < quizData.length - 1) { qIndex++; renderQuiz(); } }
+    function restartQuiz() { qIndex = 0; qScore = 0; renderQuiz(); }
+
+    function copyHomework() {
+      const text = "ДЗ по информатике (7 класс): Как работают сенсоры в моём телефоне.\n" +
+        "1. Датчик освещённости (автояркость на свету и в тени).\n" +
+        "2. Акселерометр и гироскоп (автоповорот экрана на 90°).\n" +
+        "3. Датчик приближения (отключение экрана у уха при звонке).\n" +
+        "4. Дополнительные сенсоры моей модели (отпечаток пальца, FaceID, компас, NFC).";
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById('copy-hw-btn');
+        btn.textContent = '✅ Скопировано в буфер обмена!';
+        btn.classList.add('btn-success');
+      }).catch(() => {});
+    }
+
+    resetChain();
+    renderQuiz();
+  </script>
+</body>
+</html>
